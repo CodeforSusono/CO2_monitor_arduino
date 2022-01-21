@@ -24,9 +24,9 @@
 1. Arduino IDEを起動し、[使用しているライブラリ](#使用しているライブラリ)に記載した2つのライブラリをArduino IDEに読み込む
 1. 本プロジェクト用のスケッチを保存するフォルダを作成する。
 1. 本リポジトリをクローンする  
-```
-> git clone https://github.com/CodeforSusono/CO2_monitor_arduino.git
-```  
+    ```
+    > git clone https://github.com/CodeforSusono/CO2_monitor_arduino.git
+    ```
 1. CO2_monitor_arduinoフォルダからco2_monitor_arduino.inoファイルをコピーし、本プロジェクト用に作成したフォルダに保存する。
 
 ## 本手順
