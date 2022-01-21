@@ -37,6 +37,11 @@
 
 上記で正常に書き込めれば、空気よどみセンサーは動作しているはずです。
 
+## 補足
+
+LEDにWS2812Bを使っていても、色が正しく表示されないことがあります。
+実際に使用しているLEDで色が正しく表示されるか確認するため、[RGBキャリブレーション](https://github.com/FastLED/FastLED/wiki/Rgb-calibration)を行い、[LED_ORDERの#define定義](https://github.com/CodeforSusono/CO2_monitor_arduino/blob/4395e8483f1c883cc57d1171ac2c9113e0b69c91/co2_monitor_arduino.ino#L25)を適切に変更して下さい。
+
 # 空気よどみセンサーを使用するには
 
 USBケーブルを電源を供給すれば、空気よどみセンサーは使用することができます。
