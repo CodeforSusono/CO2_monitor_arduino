@@ -22,11 +22,12 @@ Adafruit_CCS811 ccs;  // ccsセンサーオブジェクト
 #define DATA_PIN  13  // D13番PINに接続
 #define LED_TYPE  WS2812B // LEDチップセット
 #define BRIGHTNESS  128   // LEDの明るさ
+#define LED_ORDER GRB     // LED RGBの並び
 CRGB leds[NUM_LEDS];  // LEDの色を指定する変数
 
 void setup() {
   // LEDの準備
-  FastLED.addLeds<LED_TYPE, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, DATA_PIN, LED_ORDER>(leds, NUM_LEDS);
   FastLED.setBrightness(BRIGHTNESS);
   
   Serial.begin(9600);
