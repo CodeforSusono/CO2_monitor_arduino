@@ -25,6 +25,12 @@ Adafruit_CCS811 ccs;  // ccsセンサーオブジェクト
 #define LED_ORDER GRB     // LED RGBの並び
 CRGB leds[NUM_LEDS];  // LEDの色を指定する変数
 
+// eCO2濃度とLED発光色の設定
+#define BLUE_ANGLE  240   // NORMAL_PPM時のhue angle 
+#define RED_ANGLE 0       // ALERT_PPM時のhue angle
+#define NORMAL_PPM  400   // NORMAL_PPM値
+#define ALERT_PPM 1000    // ALERT_PPM値
+
 void setup() {
   // LEDの準備
   FastLED.addLeds<LED_TYPE, DATA_PIN, LED_ORDER>(leds, NUM_LEDS);
@@ -34,7 +40,7 @@ void setup() {
   Serial.println("CCS811 x WS2812 by Code for SUSONO");
   Serial.print("LED Brightness:");
   Serial.println(FastLED.getBrightness());
-
+  
   if(!ccs.begin()){
     Serial.println("Failed to start sensor! Please check your wiring.");
     while(1);
@@ -48,29 +54,42 @@ void setup() {
 // (参考にした情報)
 //   http://blog.eldhrimnir.com/?p=611
 //   https://www.petitmonte.com/javascript/rgb_hsv_convert.html
-CRGB toCRGB( int val ) {
-
+CRGB toCRGB( int eco2 ) {
   CRGB rgbcolor;
+  int h_angle;
+
+  // eco2値　から　hue angle　へ
+  h_angle = map(eco2, NORMAL_PPM, ALERT_PPM, BLUE_ANGLE, RED_ANGLE);
+  // 上限・下限値でクリップ
+  if (h_angle < RED_ANGLE) {
+    h_angle = RED_ANGLE;
+  } else if (h_angle >= BLUE_ANGLE) {
+    h_angle = BLUE_ANGLE;
+  }
+  Serial.print("eCO2: ");
+  Serial.print(eco2);
+  Serial.print("ppm, hue angle: ");
+  Serial.print(h_angle);
   
-  if(val <= 0){
+  if(h_angle <= 0){
     rgbcolor.r=255;
     rgbcolor.g=0;
     rgbcolor.b=0;
-  }else if (val <= 120) {
+  }else if (h_angle <= 120) {
     /* H値(0-120) 赤–黄–緑     */
-    rgbcolor.r = map(val,0,120,255,0);     // 赤LED R←→G
-    rgbcolor.g = map(val,0,120,0,255);     // 緑LED G←→R
+    rgbcolor.r = map(h_angle,0,120,255,0);     // 赤LED R←→G
+    rgbcolor.g = map(h_angle,0,120,0,255);     // 緑LED G←→R
     rgbcolor.b = 0;
-  } else if (val <= 240) {
+  } else if (h_angle <= 240) {
     /* H値(120-240) 緑–水色–青 */
     rgbcolor.r = 0;
-    rgbcolor.g = map(val,120,240,255,0);   // 緑LED G←→B
-    rgbcolor.b = map(val,120,240,0,255);   // 青LED B←→G
+    rgbcolor.g = map(h_angle,120,240,255,0);   // 緑LED G←→B
+    rgbcolor.b = map(h_angle,120,240,0,255);   // 青LED B←→G
   } else {
     /* H値(240-360) 青–紫–赤   */
-    rgbcolor.r = map(val,240,360,0,255);   // 青LED R←→B
+    rgbcolor.r = map(h_angle,240,360,0,255);   // 青LED R←→B
     rgbcolor.g = 0;
-    rgbcolor.b = map(val,240,360,255,0);   // 青LED B←→R
+    rgbcolor.b = map(h_angle,240,360,255,0);   // 青LED B←→R
   }
 
   return rgbcolor;
@@ -78,36 +97,28 @@ CRGB toCRGB( int val ) {
 
 void loop() {
   int cVal;
-  CRGB rgb;
+  CRGB rgb = CRGB::WhiteSmoke;
   int err_id;
    
   if(ccs.available()){
     if(!ccs.readData()){
-      cVal = map(ccs.geteCO2(), 400, 1500, 240, 0); // 色空間の中での位置を設定。CO2の値400から1500の間で260から0の値を返す
-      Serial.print("cVal: ");
-      Serial.print(cVal);
-      Serial.print(", CO2: ");
-      Serial.print(ccs.geteCO2());
-      Serial.print("ppm, TVOC: ");
-      Serial.println(ccs.getTVOC());
+      // センサーのeCO2値をCRGB値に変換
+      rgb = toCRGB( ccs.geteCO2() );
+      Serial.print(", TVOC: ");
+      Serial.println( ccs.getTVOC() );
       err_id = 0;
     }
     else{
       Serial.println("ERROR: ccs can't read data !");
       err_id = 1;
-      //while(1);
     }
   }
   else {
     Serial.println("ERROR: ccs data isn't ready !");
     err_id = 2;
-    //while(1);
   }
   
-  //CRGB値に変換
-  rgb = toCRGB( cVal );
-  
-//ここからシリアルテープライトの発光
+  // テープライトの発光
   leds[0] = rgb;
   leds[1] = leds[0];
   leds[2] = leds[1];
