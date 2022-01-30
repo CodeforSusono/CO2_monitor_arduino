@@ -31,25 +31,6 @@ CRGB leds[NUM_LEDS];  // LEDの色を指定する変数
 #define NORMAL_PPM  400   // NORMAL_PPM値
 #define ALERT_PPM 1000    // ALERT_PPM値
 
-void setup() {
-  // LEDの準備
-  FastLED.addLeds<LED_TYPE, DATA_PIN, LED_ORDER>(leds, NUM_LEDS);
-  FastLED.setBrightness(BRIGHTNESS);
-  
-  Serial.begin(9600);
-  Serial.println("CCS811 x WS2812 by Code for SUSONO");
-  Serial.print("LED Brightness:");
-  Serial.println(FastLED.getBrightness());
-  
-  if(!ccs.begin()){
-    Serial.println("Failed to start sensor! Please check your wiring.");
-    while(1);
-  }
-
-  // Wait for the sensor to be ready
-  while(!ccs.available());
-}
-
 // eCO2値をLEDのCRGB値に変換する
 // (参考にした情報)
 //   http://blog.eldhrimnir.com/?p=611
@@ -93,6 +74,34 @@ CRGB toCRGB( int eco2 ) {
   }
 
   return rgbcolor;
+}
+
+void setup() {
+  // LEDの準備
+  FastLED.addLeds<LED_TYPE, DATA_PIN, LED_ORDER>(leds, NUM_LEDS);
+  FastLED.setBrightness(BRIGHTNESS);
+  
+  Serial.begin(9600);
+  Serial.println("CCS811 x WS2812 by Code for SUSONO");
+  Serial.print("LED Brightness:");
+  Serial.println(FastLED.getBrightness());
+
+  // LED発光テスト
+  Serial.println("LED test!");
+  leds[0] = toCRGB(400);  // 400pppmの色（青）
+  leds[1] = toCRGB(600);  // 600ppmの色（青緑）
+  leds[2] = toCRGB(800);  // 800ppmの色（黄緑）
+  leds[3] = toCRGB(1000); // 1000ppmの色（赤）
+  FastLED.show();
+  Serial.println("LED test done.");
+  
+  if(!ccs.begin()){
+    Serial.println("Failed to start sensor! Please check your wiring.");
+    while(1);
+  }
+
+  // Wait for the sensor to be ready
+  while(!ccs.available());
 }
 
 void loop() {
